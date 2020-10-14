@@ -96,10 +96,14 @@ module.exports = {
       return ctx.notFound('role.notFound');
     }
 
-    const permissions = await strapi.admin.services.permission.assign(role.id, input.permissions);
+    const assignResults = await strapi.admin.services.permission.assign(role.id, input.permissions);
+
+    if (assignResults.addedPermissions.length || assignResults.deletedPermissions.length) {
+      await strapi.admin.services.metrics.sendDidUpdateRolePermissions();
+    }
 
     ctx.body = {
-      data: permissions,
+      data: assignResults.newExistingPermissions,
     };
   },
 };

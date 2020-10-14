@@ -116,17 +116,21 @@ const assign = async (roleId, permissions = []) => {
     permissionsWithRole,
     arePermissionsEqual
   );
-  const permissionsToReturn = _.differenceBy(existingPermissions, permissionsToDelete, 'id');
+  const newExistingPermissions = _.differenceBy(existingPermissions, permissionsToDelete, 'id');
 
   if (permissionsToDelete.length > 0) {
     await deleteByIds(permissionsToDelete.map(p => p.id));
   }
   if (permissionsToAdd.length > 0) {
     const createdPermissions = await createMany(permissionsToAdd);
-    permissionsToReturn.push(...createdPermissions.map(p => ({ ...p, role: p.role.id })));
+    newExistingPermissions.push(...createdPermissions.map(p => ({ ...p, role: p.role.id })));
   }
 
-  return permissionsToReturn;
+  return {
+    addedPermissions: permissionsToAdd,
+    deletedPermissions: permissionsToDelete,
+    newExistingPermissions,
+  };
 };
 
 /**

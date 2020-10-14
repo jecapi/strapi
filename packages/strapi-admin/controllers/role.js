@@ -129,10 +129,17 @@ module.exports = {
       permissionsToAssign = input.permissions;
     }
 
-    const permissions = await strapi.admin.services.permission.assign(role.id, permissionsToAssign);
+    const assignResults = await strapi.admin.services.permission.assign(
+      role.id,
+      permissionsToAssign
+    );
+
+    if (assignResults.addedPermissions.length || assignResults.deletedPermissions.length) {
+      await strapi.admin.services.metrics.sendDidUpdateRolePermissions();
+    }
 
     ctx.body = {
-      data: permissions,
+      data: assignResults.newExistingPermissions,
     };
   },
 };
